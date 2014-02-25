@@ -238,13 +238,24 @@ end
 class FigureRenderer < NodeRenderer
 
   def process
-    title = @node.children.find             { |e| e.name == 'title' }
-    titletext = title.children.find { |e| e.text? }
+    # Title
+    title = @node.children.find { |e| e.name == 'title' }
+    text = title.children.find { |e| e.text? }.text
+
+    # Image
     mediaobject = @node.children.find       { |e| e.name == 'mediaobject' }
     imageobject = mediaobject.children.find { |e| e.name == 'imageobject' }
     imagedata   = imageobject.children.find { |e| e.name == 'imagedata' }
+    href = imagedata[:fileref]
 
-    # TODO implement
+    @pdf.indent(30, 30) do
+      @pdf.image(href, width: @pdf.bounds.width)
+      @pdf.formatted_text([
+        { text: 'Figure: ', styles: [ :bold ],   font: 'PT Sans' },
+        { text: text,       styles: [ :italic ], font: 'Gentium Basic' }
+        ])
+      @pdf.move_down 10
+    end
   end
 
 end
