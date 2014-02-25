@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+
+<book lang="en">
+<bookinfo>
+    <title>nanoc</title>
+    <date>v1.0</date>
+    <author>
+        <firstname>Denis</firstname>
+        <surname>Defreyne</surname>
+        <email>denis.defreyne@stoneship.org</email>
+    </author>
+    <authorinitials>DD</authorinitials>
+<revhistory><revision><date>v1.0</date><authorinitials>DD</authorinitials></revision></revhistory>
+</bookinfo>
+<chapter id="about">
+<title>About</title>
+<section id="what_is_nanoc">
+<title>What is nanoc?</title>
+<simpara>nanoc is a tool for building static web sites. It can transform content from one format (e.g. Haml or Markdown) into another (usually HTML) and lay out pages so that the site’s look and feel is consistent across all pages.</simpara>
+<simpara>nanoc is not a true content management system (CMS), as it does not manage content—<emphasis role="strong">you</emphasis> manage the content, and nanoc processes it for you. Some CMS-like functionality, such as finding items that have certain attributes associated with them, is present in nanoc, though; for example, running a query such as “find all articles by a given author” is possible.</simpara>
+<simpara>Unlike many CMSes and blog engines, nanoc runs on your local computer, and not on the server. It doesn’t need to—nanoc produces static HTML files that can be uploaded to any web server. This also means that the server doesn’t need to have anything “special” installed at all—it just needs to be able to serve static files, which every web server can.</simpara>
+</section>
+<section id="history">
+<title>History</title>
+<simpara>Around 2006, I was looking for a Ruby blog engine. However, having a VPS with only 96 MB of RAM, any Ruby-based CMS ran <emphasis>extremely</emphasis> slowly. When a friend of mine showed his web site consisting only of static files, I decided to take that route as well, and ended up with a script with basic Markdown and ERB support; the first version of nanoc, released in April 2007.</simpara>
+<simpara>nanoc has grown quite a bit since then. While the first version of nanoc could be considered more as a set of interacting scripts, nanoc 2.0 was designed to be an actual application, while retaining the spirit of nanoc 1.0. A bit later, in 2009, nanoc 3.0 followed, introducing the concept of the <literal>Rules</literal> file, allowing filters and layouts to be specified in a DRYer and more flexible way. nanoc 3.x is still actively being developed, with feature releases every six months and bug fix releases whenever they are necessary.</simpara>
+</section>
+<section id="why_use_nanoc">
+<title>Why use nanoc?</title>
+<simpara>nanoc is suitable for all sorts of sites. It is usable for small personal weblogs, portfolios, product web sites and more. It has been used in production for such sites. All web sites that do not need to allow user-contributed content through a web interface can be built with nanoc.</simpara>
+<simpara>nanoc is not a simplistic web site publishing tool. It is aimed at being both powerful and flexible. While other static web site publishing tools focus on providing only a handful of features, nanoc aims to be capable of building all sorts of sites.</simpara>
+<simpara>Extending nanoc is easy because of its modular architecture. It comes with only a couple of extensions, thereby avoiding bloat, but allows new functionality to be plugged in quickly and easily. A well-documented API is what makes nanoc powerful and flexible.</simpara>
+<simpara>The target audience of nanoc is Rubyists with some level of Ruby experience. It does not hide its Ruby roots, as doing so would make it a lot less powerful. This does mean, however, that people new to Ruby will maybe not find nanoc to be the easiest static site generation tool out there.</simpara>
+</section>
+<section id="why_static">
+<title>Why Static?</title>
+<simpara>Why use a static site generator instead of a powerful server-side content management system? Here are some reasons why using a server-side CMS may not be the right choice for you:</simpara>
+<section id="fast">
+<title>Fast</title>
+<simpara>Static pages load lightning fast.</simpara>
+<simpara>The main reason why nanoc was created, is to reduce the server load and improve page load times. After all, nothing gets served faster than a static HTML page. Many CMSes (in its broadest sense) waste a lot of time. On each request, they fetch data from the database, then let a templating system merge the data with a page template, and finally send the assembled content to the site visitor’s browser. Caching helps quite a bit, but not all CMSes do it well.</simpara>
+<simpara>nanoc goes a step further than caching, and generates static files right away (you may call it “extreme caching” if you are so inclined). Using static files is not only fast—it also allows web browsers to cache files much more efficiently due to <literal>Last-Modified</literal> headers and such.</simpara>
+</section>
+<section id="safe">
+<title>Safe</title>
+<simpara>It is a lot safer to host a static web site than a dynamic one.</simpara>
+<simpara>Because nanoc does not run on the server itself, there is no way to exploit nanoc or Ruby, one way or another, in order to hack the site. Most CMSes do run on the server, which certainly makes them a target for attacks.</simpara>
+<simpara>Using nanoc is not a guarantee that your site will be unhackable, though. If your FTP account has a weak password, then you’re asking for trouble. With nanoc you can still output dynamic files, such as PHP ones, and these pages could still be the cause of security issues.</simpara>
+</section>
+<section id="previewable">
+<title>Previewable</title>
+<simpara>nanoc takes the pressure off going live.</simpara>
+<simpara>When making changes to a live site, there is always the possibility that something will go wrong. Perhaps a typo in a SQL statement, a <literal>div</literal> that wasn’t closed, etc. Whatever the reason is, visitors will temporarily see a site that is broken in some way.</simpara>
+<simpara>When nanoc compiles a site, the compiled site goes into the <literal>output</literal> directory on the local computer. You can check every single page to make sure their contents are correct before uploading the site to the live server. That way, you’re sure that nothing ever breaks.</simpara>
+</section>
+<section id="versionable">
+<title>Versionable</title>
+<simpara>The source files for a nanoc site are stored as flat text files by default. This means that you can easily store the site in a versioned repository (Subversion, Mercurial, git, darcs, Bazaar, etc.).</simpara>
+<simpara>Both the nanoc site and my personal web site, which are both built with nanoc, are versioned this way (they are publicly available from the nanoc repository—check the <ulink url="/development/">Development</ulink> section for details).</simpara>
+</section>
+</section>
+<section id="similar_projects">
+<title>Similar Projects</title>
+<simpara>There are several static website generators floating around. Some of them are like nanoc, and some of them aren’t similar at all. If nanoc doesn’t fulfill your needs, check out <ulink url="http://staticsitegenerators.net/">this list of static site generators</ulink>.</simpara>
+</section>
+</chapter>
+<chapter id="tutorial">
+<title>Tutorial</title>
+<section id="requirements">
+<title>Requirements</title>
+<simpara>This tutorial does not cover the installation of nanoc. For information on how to install nanoc, as well as Ruby and Rubygems, check out the <ulink url="/install/">Install</ulink> page.</simpara>
+<simpara>nanoc also requires some experience with Ruby. It is possible to use nanoc with no Ruby knowledge, but to take full advantage of nanoc, you’ll need to know Ruby well. I recommend the <ulink url="http://ruby-doc.org/docs/ProgrammingRuby/">Programming Ruby</ulink> book to people who don’t have a lot of Ruby experience yet.</simpara>
+</section>
+<section id="creating_a_site">
+<title>Creating a Site</title>
+<simpara>nanoc is a command-line application. This means that in order to use nanoc, you have to type geeky commands into a terminal all day. Hey, that’s the way all cool apps work.</simpara>
+<simpara>A nanoc-powered site is a directory with a specific structure. In this tutorial, we’ll create a site named <literal>tutorial</literal>. To create this site, type into the terminal:</simpara>
+<screen>% <emphasis role="strong">nanoc create-site tutorial</emphasis></screen>
+<simpara>If you did that right, you should see something like this in the terminal:</simpara>
+<screen>% <emphasis role="strong">nanoc create-site tutorial</emphasis>
+      create  nanoc.yaml
+      create  Rakefile
+      create  Rules
+      create  content/index.html
+      create  content/stylesheet.css
+      create  layouts/default.html
+Created a blank nanoc site at 'tutorial\'. Enjoy!
+%</screen>
+<simpara>The nanoc-powered site named <literal>tutorial</literal> has now been created. Go into the directory and list the files there. You should see something like this:</simpara>
+<screen>% <emphasis role="strong">cd tutorial</emphasis>
+tutorial% ls -l
+total 24
+-rw-r--r--  1 ddfreyne  staff   22 Feb 17 14:44 Rakefile
+-rw-r--r--  1 ddfreyne  staff  692 Feb 17 14:44 Rules
+-rw-r--r--  1 ddfreyne  staff  100 Feb 17 14:44 nanoc.yaml
+drwxr-xr-x  4 ddfreyne  staff  136 Feb 17 14:44 content
+drwxr-xr-x  3 ddfreyne  staff  102 Feb 17 14:44 layouts
+drwxr-xr-x  3 ddfreyne  staff  102 Feb 17 14:44 lib
+drwxr-xr-x  2 ddfreyne  staff   68 Feb 17 14:44 output
+tutorial%</screen>
+<simpara>What all those files and directories are for will all become clear soon.</simpara>
+</section>
+<section id="compiling_the_site">
+<title>Compiling the Site</title>
+<simpara>Before doing anything else, make sure the current working directory is the site you just created. All nanoc commands, except for <literal>create-site</literal>, require the current working directory to be a nanoc site. So, if you haven’t done it before:</simpara>
+<screen>% <emphasis role="strong">cd tutorial</emphasis>
+tutorial%</screen>
+<simpara>Every new nanoc site already has a bit of content. It comes with one simple page with some simple "getting started" instructions. Before you can view the site, it needs to be compiled. To compile the site, do this:</simpara>
+<screen>tutorial% <emphasis role="strong">nanoc compile</emphasis></screen>
+<simpara>Or, if you want it short, just type <literal>nanoc</literal>:</simpara>
+<screen>tutorial% <emphasis role="strong">nanoc</emphasis></screen>
+<simpara>This is what’ll appear in the terminal while nanoc is compiling:</simpara>
+<screen>tutorial% <emphasis role="strong">nanoc compile</emphasis>
+Loading site data…
+Compiling site…
+      create  [0.01s] output/index.html
+
+Site compiled in 0.01s.
+tutorial%</screen>
+<simpara>A file named <literal>index.html</literal> has been created in the <literal>output</literal> directory. The preferred way of previewing a site is using the <literal>view</literal> command, but we’ll need to install the <literal>adsf</literal> gem (<emphasis>not</emphasis> <literal>asdf</literal>!) before we can preview:</simpara>
+<screen>tutorial% <emphasis role="strong">gem install adsf</emphasis></screen>
+<note><simpara>You may have to prefix the aforementioned command with <literal>sudo</literal>.</simpara></note>
+<simpara>Now we can start a web server, like this:</simpara>
+<screen>tutorial% <emphasis role="strong">nanoc view</emphasis></screen>
+<simpara>Now, open your web browser and navigate to <ulink url="http://localhost:3000/">http://localhost:3000/</ulink>. What you’ll see is something like this:</simpara>
+<figure><title>Screenshot of what a brand new nanoc site looks like</title>
+<mediaobject>
+  <imageobject>
+  <imagedata fileref="default-site.png"/>
+  </imageobject>
+  <textobject><phrase>Screenshot of what a brand new nanoc site looks like</phrase></textobject>
+</mediaobject>
+</figure>
+<simpara>(If you open the <literal>index.html</literal> directly in your web browser, the stylesheet will most likely not be loaded. This is because the page has an <emphasis>absolute</emphasis> link to the <literal>style.css</literal> file, not a relative one.)</simpara>
+<simpara>You can also open the <literal>output/index.html</literal> file in your favourite text editor, where you’ll find that the file is just a normal HTML page.</simpara>
+</section>
+<section id="editing_the_home_page">
+<title>Editing the Home Page</title>
+<simpara>The first step in getting to know how nanoc really works will involve editing the content of the home page. First, though, a quick explanation of how uncompiled pages are stored.</simpara>
+<simpara>The pages in a nanoc site are stored in the <literal>content</literal> directory. Currently, that directory has only two files: <literal>index.html</literal> and <literal>stylesheet.css</literal>. The first file forms the home page, while the second file is the stylesheet. If you open the <literal>index.html</literal> file, you’ll notice a section containing metadata in YAML format at the top.</simpara>
+<simpara>Let’s change the content of the home page. Open <literal>index.html</literal> and add a paragraph somewhere in the file. I recommend something like this:</simpara>
+<programlisting language="html" linenumbering="unnumbered">&lt;p&gt;This is a brand new paragraph which I've just inserted into this file! Gosh, I can barely control my excitement!&lt;/p&gt;</programlisting>
+<simpara>To view the changes, the site must be recompiled first. So, run the <literal>compile</literal> command. You should see something like this:</simpara>
+<screen>tutorial% <emphasis role="strong">nanoc compile</emphasis>
+Loading site data…
+Compiling site…
+      update  [0.01s] output/index.html
+
+Site compiled in 0.01s.
+tutorial%</screen>
+<simpara>The number between brackets next to the <literal>output/index.html</literal> filename indicates the time it took for nanoc to compile the home page. At the bottom, the total time needed for compiling the entire site is also shown.</simpara>
+<simpara>Make sure that the preview server (<literal>nanoc view</literal>) is still running, reload <ulink url="http://localhost:3000/">http://localhost:3000/</ulink> in your browser, and verify that the page has indeed been updated.</simpara>
+<simpara>In the same file, let’s change the page title from "Home" to something more interesting. Change the line that reads <literal>title: "Home"</literal> to something else. The file should now start with this:</simpara>
+<programlisting linenumbering="unnumbered">title: "My New Home Page"</programlisting>
+<simpara>The metadata section at the top of the file is formatted as YAML. All attributes are free-form; you can put anything you want in the attributes: the page title, keywords relevant to this page, the name of the page’s author, the language the page is written in, etc.</simpara>
+<simpara>Recompile the site and once again load <ulink url="http://localhost:3000/">http://localhost:3000/</ulink> in your browser. You will see that the browser’s title bar displays the page’s title now. How the page title ends up between <literal>&lt;title&gt;</literal> and <literal>&lt;/title&gt;</literal> will be explained in the <xref linkend="customizing_the_layout"/> section below!</simpara>
+</section>
+<section id="adding_a_page">
+<title>Adding a Page</title>
+<simpara>In nanoc, pages are sometimes referred to as "items." This is because items don’t necessarily have to be pages: JavaScript and CSS files aren’t pages, but they are items.</simpara>
+<simpara>To create a new page or item in the site, use the <literal>create-item</literal> command (or <literal>ci</literal> for short). Let’s create an "about" page like this:</simpara>
+<screen>tutorial% <emphasis role="strong">nanoc create-item about</emphasis></screen>
+<simpara>You should see this:</simpara>
+<screen>tutorial% <emphasis role="strong">nanoc create-item about</emphasis>
+      create  content/about.html
+tutorial%</screen>
+<simpara>Open the newly generated file and put some text in it, like this (be sure to leave the metadata section intact):</simpara>
+<programlisting language="html" linenumbering="unnumbered">&lt;h1&gt;My cute little "About" page&lt;/h1&gt;
+
+&lt;p&gt;This is the about page for my new nanoc site.&lt;/p&gt;</programlisting>
+<simpara>In the metadata section, change the title to something else:</simpara>
+<programlisting linenumbering="unnumbered">title: "My Cool About Page"</programlisting>
+<simpara>Recompile the site, and notice that a file <literal>output/about/index.html</literal> has been created. With the preview server running, open <ulink url="http://localhost:3000/about/">http://localhost:3000/about/</ulink> in your browser and admire your brand new about page. Shiny!</simpara>
+<simpara>By the way, if you don’t like having a metadata section at the top of every page (perhaps because it breaks syntax highlighting), you can put the metadata in a YAML file with the same name as the page itself. For example, the <literal>content/about.html</literal> page could have its metadata stored in <literal>content/about.yaml</literal> instead.</simpara>
+</section>
+<section id="customizing_the_layout">
+<title>Customizing the Layout</title>
+<simpara>The default home page recommended editing the default layout, so let’s see what we can do there.</simpara>
+<simpara>As you probably have noticed already, the page’s content files are not complete HTML files—they are <emphasis role="strong">partial</emphasis> HTML files. A page needs <literal>&lt;html&gt;</literal>, <literal>&lt;head&gt;</literal>, <literal>&lt;body&gt;</literal>, … elements before it’s valid HTML. This doesn’t mean you’ve been writing invalid HTML all along, though, because nanoc <emphasis role="strong">layouts</emphasis> each page as a part of the compilation process.</simpara>
+<simpara>Take a look at the <literal>default.html</literal> file in the <literal>layouts</literal> directory. Just like items, it contains a metadata section at the top of the file. Open it in your text editor. It <emphasis role="strong">almost</emphasis> looks like a HTML page:</simpara>
+<programlisting language="html" linenumbering="unnumbered">&lt;!DOCTYPE HTML&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;A Brand New nanoc Site - &lt;%= @item[:title] %&gt;&lt;/title&gt; &lt;!--1--&gt;
+    &lt;link rel="stylesheet" href="/style.css"&gt;
+
+    &lt;!-- you don't need to keep this, but it's cool for stats! --&gt;
+    &lt;meta name="generator" content="nanoc &lt;%= Nanoc::VERSION %&gt;"&gt; &lt;!--2--&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id="main"&gt;
+      &lt;%= yield %&gt; &lt;!--3--&gt;
+    &lt;/div&gt;
+    &lt;div id="sidebar"&gt;
+      &lt;h2&gt;Documentation&lt;/h2&gt;
+      &lt;ul&gt;
+        &lt;li&gt;&lt;a href="http://nanoc.ws/docs/"&gt;Documentation&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href="http://nanoc.ws/docs/tutorial/"&gt;Getting Started&lt;/a&gt;&lt;/li&gt;
+      &lt;/ul&gt;
+      &lt;h2&gt;Community&lt;/h2&gt;
+      &lt;ul&gt;
+        &lt;li&gt;&lt;a href="http://groups.google.com/group/nanoc/"&gt;Discussion Group&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href="irc://chat.freenode.net/#nanoc"&gt;IRC Channel&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href="http://github.com/nanoc/nanoc/wiki/"&gt;Wiki&lt;/a&gt;&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</programlisting>
+<simpara>There are three <emphasis>eRuby</emphasis> instructions in this layout:</simpara>
+<calloutlist>
+<callout arearefs="">
+<para>
+Includes page title, as defined in the metadata
+</para>
+</callout>
+<callout arearefs="">
+<para>
+Includes the current version of nanoc
+</para>
+</callout>
+<callout arearefs="">
+<para>
+Includes the page content
+</para>
+</callout>
+</calloutlist>
+<simpara>Here’s a cheat sheet in case you’re not familar with eRuby:</simpara>
+<variablelist>
+<varlistentry>
+<term>
+<literal>&lt;% code %&gt;</literal>
+</term>
+<listitem>
+<simpara>
+Runs the code between <literal>&lt;%</literal> and <literal>%&gt;</literal>
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<literal>&lt;%= code %&gt;</literal>
+</term>
+<listitem>
+<simpara>
+Runs the code between <literal>&lt;%=</literal> and <literal>%&gt;</literal>, and displays the return value on the web page
+</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+<simpara>By the way, if you don’t like eRuby and would rather use something like Haml or Mustache, you can! Check out the <ulink url="/docs/reference/filters/haml/">Haml</ulink> and <ulink url="/docs/reference/filters/mustache/">Mustache</ulink> filters (filters will be explained below).</simpara>
+<simpara>The <literal>&lt;%= yield %&gt;</literal> instruction will be replaced with the item’s compiled content when compiling. There is another important piece of eRuby code near the top of the file:</simpara>
+<programlisting language="html" linenumbering="unnumbered">&lt;title&gt;A Brand New nanoc Site - &lt;%= @item[:title] %&gt;&lt;/title&gt;</programlisting>
+<simpara>This is where the page’s title is put into the compiled document.</simpara>
+<simpara>Every page can have arbitrary metadata associated with it. To demonstrate this, add the following line to the metadata section of the about page:</simpara>
+<programlisting linenumbering="unnumbered">author: "John Doe"</programlisting>
+<simpara>Now output the author name in the layout. Put this piece of code somewhere in your layout (somewhere between the <literal>&lt;body&gt;</literal> and <literal>&lt;/body&gt;</literal> tags, please, or you won’t see a thing):</simpara>
+<programlisting language="html" linenumbering="unnumbered">&lt;% if @item[:author] %&gt;
+  &lt;p&gt;This page was written by &lt;%= @item[:author] %&gt;.&lt;/p&gt;
+&lt;% end %&gt;</programlisting>
+<simpara>Recompile the site, and load <ulink url="http://localhost:3000/about/">http://localhost:3000/about/</ulink> in your browser. You’ll see that the about page has a line saying <literal>&lt;p&gt;This page was written by John Doe&lt;/p&gt;</literal>, while the home page does not—as expected!</simpara>
+</section>
+<section id="writing_pages_in_markdown">
+<title>Writing Pages in Markdown</title>
+<simpara>You don’t have to write pages in HTML. Sometimes, it is easier to use another language which can be converted to HTML instead. In this example, we’ll use <ulink url="http://daringfireball.net/projects/markdown">Markdown</ulink> to avoid having to write HTML. nanoc calls these text transformations <emphasis role="strong">filters</emphasis>.</simpara>
+<simpara>Get rid of the content of the home page (<literal>content/index.html</literal>) and replace it with the following Markdown-formatted text (but leave the metadata section intact):</simpara>
+<screen># A First Level Header
+
+## A Second Level Header
+
+Now is the time for all good men to come to
+the aid of their country. This is just a
+regular paragraph.
+
+The quick brown fox jumped over the lazy
+dog’s back.
+
+### Header 3
+
+&gt; This is a blockquote.
+&gt;
+&gt; This is the second paragraph in the blockquote.
+&gt;
+&gt; ## This is an H2 in a blockquote</screen>
+<simpara>We’ll use <ulink url="http://kramdown.rubyforge.org/">kramdown</ulink> for converting Markdown into HTML. Before we can use kramdown, we need to install the gem, like this:</simpara>
+<screen>% <emphasis role="strong">gem install kramdown</emphasis></screen>
+<note><simpara>You may have to prefix the aforementioned command with <literal>sudo</literal>.</simpara></note>
+<simpara>To tell nanoc to format the home page as Markdown, let nanoc run it through the <literal>kramdown</literal> filter. For this, the <literal>Rules</literal> file is used. This file specifies the processing instructions for all items.</simpara>
+<simpara>The <literal>Rules</literal> file contains a bit of Ruby code like this:</simpara>
+<programlisting language="ruby" linenumbering="unnumbered">compile '*' do
+  if item.binary?
+    # don’t filter binary items
+  else
+    filter :erb
+    layout 'default'
+  end
+end</programlisting>
+<simpara>This is a <emphasis>compilation</emphasis> rule, which means it will define how an item is processed. The string argument defines what items will be processed using this rule. The <literal>*</literal> wildcard matches zero or more characters, so in this case, all items will be processed using this rule. Inside the block, there is a check whether the item is binary (e.g. an image) or not (e.g. a HTML page or a CSS stylesheet). If the item is binary, nothing happens&#8212;the item is left unchanged. If the item is not binary, the <literal>:erb</literal> filter is run, after which the <literal>default</literal> layout is applied.</simpara>
+<simpara>The <literal>Rules</literal> file also contains a call to <literal>route</literal>, and it looks similar to the call to <literal>compile</literal>:</simpara>
+<programlisting language="ruby" linenumbering="unnumbered">route '*' do
+  if item.binary?
+    # Write item with identifier /foo/ to /foo.ext
+    item.identifier.chop + '.' + item[:extension]
+  else
+    # Write item with identifier /foo/ to /foo/index.html
+    item.identifier + 'index.html'
+  end
+end</programlisting>
+<simpara>This is a <emphasis>routing</emphasis> rule, and therefore it defines where an item is written to once it is processed. Again, the string argument defines which items will be processed using this rule, and the <literal>*</literal> wildcard means it will apply to all items.</simpara>
+<simpara>Inside the block, we check whether the item is binary or not. None of the items in the site are, so the items will be written to identifier + <emphasis>index.html</emphasis>, so an item with identifier <literal>'/foo/'</literal> is written to <literal>'/foo/index.html'</literal>.</simpara>
+<simpara>To make sure that the home page (but not any other page) is run through the <literal>kramdown</literal> filter, we add a compilation rule <emphasis role="strong">before</emphasis> the existing compilation rule. It should look like this:</simpara>
+<programlisting language="ruby" linenumbering="unnumbered">compile '/' do
+  filter :kramdown
+  layout 'default'
+end</programlisting>
+<simpara>It is important that this rule comes <emphasis role="strong">before</emphasis> the existing one (<literal>compile '*' do … end</literal>). When compiling a page, nanoc will use the first and only the first matching rule; if the new compilation rule were <emphasis role="strong">below</emphasis> the existing one, it would never have been used.</simpara>
+<simpara>The default routing rule still matches out needs, so we’ll keep that one intact.</simpara>
+<simpara>Now that we’ve told nanoc to filter this page using kramdown, let’s recompile the site. The <literal>output/index.html</literal> page source should now contain this text (header and footer omited):</simpara>
+<programlisting language="html" linenumbering="unnumbered">&lt;h1&gt;A First Level Header&lt;/h1&gt;
+
+&lt;h2&gt;A Second Level Header&lt;/h2&gt;
+
+&lt;p&gt;Now is the time for all good men to come to
+the aid of their country. This is just a
+regular paragraph.&lt;/p&gt;
+
+&lt;p&gt;The quick brown fox jumped over the lazy
+dog's back.&lt;/p&gt;
+
+&lt;h3&gt;Header 3&lt;/h3&gt;
+
+&lt;blockquote&gt;
+    &lt;p&gt;This is a blockquote.&lt;/p&gt;
+
+    &lt;p&gt;This is the second paragraph in the blockquote.&lt;/p&gt;
+
+    &lt;h2&gt;This is an H2 in a blockquote&lt;/h2&gt;
+&lt;/blockquote&gt;</programlisting>
+<simpara>The kramdown filter is not the only filter you can use—take a look a the <ulink url="/docs/reference/filters/">full list of filters included with nanoc</ulink>. You can also write your own filters—read the <ulink url="/docs/extending-nanoc/#writing-filters">Writing Filters</ulink> section in the manual for details.</simpara>
+</section>
+<section id="writing_some_custom_code">
+<title>Writing some Custom Code</title>
+<simpara>There is a directory named <literal>lib</literal> in your nanoc site. In there, you can throw Ruby source files, and they’ll be read and executed before the site is compiled. This is therefore the ideal place to define helper methods.</simpara>
+<simpara>As an example, let’s add some tags to a few pages, and then let them be displayed in a clean way using a few lines of custom code. Start off by giving the "about" page some tags. Open <literal>about.html</literal> and add this to the meta section:</simpara>
+<programlisting linenumbering="unnumbered">tags:
+  - foo
+  - bar
+  - baz</programlisting>
+<simpara>Next, create a file named <literal>tags.rb</literal> in the <literal>lib</literal> directory (the filename doesn’t really matter). In there, put the following function:</simpara>
+<programlisting language="ruby" linenumbering="unnumbered">def tags
+  if @item[:tags].nil?
+    '(none)'
+  else
+    @item[:tags].join(', ')
+  end
+end</programlisting>
+<simpara>This function will take the current page’s tags and return a comma-separated list of tags. If there are no tags, it returns "(none)". To put this piece of code to use, open the default layout and add this line right above the <literal>&lt;%= yield %&gt;</literal> line:</simpara>
+<programlisting language="html" linenumbering="unnumbered">&lt;p&gt;Tags: &lt;%= tags %&gt;&lt;/p&gt;</programlisting>
+<simpara>Recompile the site, and take a look at both HTML files in the <literal>output</literal> directory. If all went well, you should see a list of tags right above the page content.</simpara>
+<simpara>Writing your own functions for handling tags is not really necessary, though, as nanoc comes with a tagging helper by default. To enable this tagging helper, first delete <literal>tags.rb</literal> and create a <literal>helper.rb</literal> file (again, the filename doesn’t really matter) and put this inside:</simpara>
+<programlisting language="ruby" linenumbering="unnumbered">include Nanoc::Helpers::Tagging</programlisting>
+<simpara>This will make all functions defined in the <literal>Nanoc::Helpers::Tagging</literal> module available for use. You can check out the <ulink url="/docs/api/Nanoc/Helpers/Tagging.html">API documentation for the Tagging helper</ulink>, but there is only one function we’ll use: <literal>tags_for</literal>. It’s very similar to the <literal>tags</literal> function we wrote before. Update the layout with this:</simpara>
+<programlisting language="html" linenumbering="unnumbered">&lt;p&gt;Tags: &lt;%= tags_for(@item) %&gt;&lt;/p&gt;</programlisting>
+<simpara>Now compile the site again, and you’ll see that nanoc shows the tags for the page, but this time using the built-in tagging helper.</simpara>
+<simpara>nanoc comes with quite a few useful helpers. The <ulink url="/docs/api/">API documentation</ulink> describes each one of them.</simpara>
+</section>
+<section id="that_s_it">
+<title>That’s it!</title>
+<simpara>This is the end of the tutorial. I hope that this tutorial both whet your appetite, and gave you enough information to get started with nanoc.</simpara>
+<simpara>There’s more reading material. It’s definitely worth checking out the following chapters; they’re rather big, but they contains everything you need to know about nanoc.</simpara>
+</section>
+</chapter>
+</book>
