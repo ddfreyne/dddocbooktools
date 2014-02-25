@@ -1,10 +1,39 @@
 # encoding: utf-8
 
+class State
+
+  attr_reader :chapters
+  attr_reader :sections
+
+  def initialize
+    @current_chapter = 1
+    @chapters = []
+
+    @current_section = 1
+    @sections = []
+  end
+
+  def add_chapter(title, page)
+    @chapters << [ page, title, @current_chapter ]
+    @current_chapter += 1
+
+    @sections << [ page, nil,   @current_section ]
+    @current_section += 1
+  end
+
+  def add_section(title, page)
+    @sections << [ page, title, @current_section ]
+    @current_section = 1
+  end
+
+end
+
 class NodeRenderer
 
-  def initialize(node, pdf)
-    @node = node
-    @pdf  = pdf
+  def initialize(node, pdf, state)
+    @node  = node
+    @pdf   = pdf
+    @state = state
   end
 
   def process
@@ -27,7 +56,7 @@ class RootRenderer < NodeRenderer
       end
 
       if klass
-        klass.new(node, @pdf).process
+        klass.new(node, @pdf, @state).process
       else
         notify_unhandled(node)
       end
@@ -48,14 +77,29 @@ class BookRenderer < NodeRenderer
       if klass
         @pdf.repeat(:all, dynamic: true) do
           @pdf.stroke_horizontal_line(50, @pdf.bounds.width - 50, at: 20)
-          at = [ @pdf.bounds.width - 100, 14 ]
+          at = [ 50, 14 ]
           @pdf.font('PT Sans', size: 10) do
-            @pdf.text_box(@pdf.page_number.to_s, at: at, size: 9, width: 50, align: :right)
+            current_chapter = @state.chapters.reverse_each.with_index.find { |e,i| e[0] <= @pdf.page_number }
+            current_section = @state.sections.reverse_each.with_index.find { |e,i| e[0] <= @pdf.page_number }
+
+            text = ''
+            if @pdf.page_number.even?
+              text << @pdf.page_number.to_s
+              text << '   |   '
+              text << "Chapter #{current_chapter[0][2]}: #{current_chapter[0][1]}"
+              align = :left
+            else
+              text << "#{current_section[0][1]}"
+              text << '   |   '
+              text << @pdf.page_number.to_s
+              align = :right
+            end
+            @pdf.text_box(text, at: at, size: 9, width: @pdf.bounds.width - 100, align: align)
           end
         end
 
         @pdf.bounding_box([ 50, @pdf.bounds.height - 30 ], width: @pdf.bounds.width - 100, height: @pdf.bounds.height - 70) do
-          klass.new(node, @pdf).process
+          klass.new(node, @pdf, @state).process
         end
       else
         notify_unhandled(node)
@@ -82,7 +126,7 @@ class ChapterRenderer < NodeRenderer
       raise 'not enough titles or too many'
     end
 
-    ChapterTitleRenderer.new(titles[0], @pdf).process
+    ChapterTitleRenderer.new(titles[0], @pdf, @state).process
   end
 
   def render_nontitles(nontitles)
@@ -93,7 +137,7 @@ class ChapterRenderer < NodeRenderer
       end
 
       if klass
-        klass.new(node, @pdf).process
+        klass.new(node, @pdf, @state).process
       else
         notify_unhandled(node)
       end
@@ -113,6 +157,7 @@ class ChapterTitleRenderer < NodeRenderer
       end
     end
     @pdf.move_down(100)
+    @state.add_chapter(text.text, @pdf.page_number)
   end
 
 end
@@ -140,7 +185,7 @@ class SectionRenderer < NodeRenderer
 
       if klass
         @pdf.indent(indent, indent) do
-          klass.new(node, @pdf).process
+          klass.new(node, @pdf, @state).process
         end
       else
         notify_unhandled(node)
@@ -169,6 +214,7 @@ class SectionTitleRenderer < NodeRenderer
       @pdf.formatted_text [ { text: text.text, font: 'PT Sans', styles: [ :bold ], size: font_size } ]
     end
     @pdf.move_down(10)
+    @state.add_section(text.text, @pdf.page_number)
   end
 
   def level
@@ -225,7 +271,7 @@ class NoteRenderer < NodeRenderer
       if klass
         @pdf.indent(20) do
           @pdf.formatted_text [ { text: 'NOTE', styles: [ :bold ], font: 'PT Sans' } ]
-          klass.new(node, @pdf).process
+          klass.new(node, @pdf, @state).process
         end
       else
         notify_unhandled(node)
@@ -282,7 +328,7 @@ class SimparaRenderer < NodeRenderer
       end
 
       if klass
-        klass.new(node, @pdf).process
+        klass.new(node, @pdf, @state).process
       else
         notify_unhandled(node)
       end
@@ -315,7 +361,7 @@ class ScreenRenderer < NodeRenderer
         end
 
         if klass
-          klass.new(node, @pdf).process
+          klass.new(node, @pdf, @state).process
         else
           notify_unhandled(node)
         end
@@ -351,7 +397,7 @@ class ProgramListingRenderer < NodeRenderer
         end
 
         if klass
-          klass.new(node, @pdf).process
+          klass.new(node, @pdf, @state).process
         else
           notify_unhandled(node)
         end

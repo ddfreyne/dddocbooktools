@@ -34,6 +34,8 @@ Prawn::Document.generate("nanoc.pdf") do |pdf|
   pdf.font_size 12
   pdf.default_leading 2
 
-  RootRenderer.new(doc, pdf).process
+  state = State.new
+
+  RootRenderer.new(doc, pdf, state).process
 
 end
