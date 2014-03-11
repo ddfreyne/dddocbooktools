@@ -46,6 +46,61 @@ class DDDocBookTools::Renderers::PDF
       raise 'abstract'
     end
 
+    def handle_top_margin(x)
+      @pdf.move_down([ x, @state.move_down ].max)
+      @state.move_down = 0
+    end
+
+    def handle_bottom_margin(x)
+      @state.move_down = x
+    end
+
+    def temp_doc
+      @tmp_doc ||= begin
+        tmp = ::Prawn::Document.new
+
+        tmp.font_families.update("PT Sans" => {
+          normal:      "fonts/PT-Sans/PTS55F.ttf",
+          italic:      "fonts/PT-Sans/PTS56F.ttf",
+          bold:        "fonts/PT-Sans/PTS75F.ttf",
+          bold_italic: "fonts/PT-Sans/PTS76F.ttf",
+        })
+        tmp.font_families.update("Gentium Basic" => {
+          normal:      "fonts/GentiumBasic_1102/GenBasR.ttf",
+          italic:      "fonts/GentiumBasic_1102/GenBasI.ttf",
+          bold:        "fonts/GentiumBasic_1102/GenBasB.ttf",
+          bold_italic: "fonts/GentiumBasic_1102/GenBasBI.ttf",
+        })
+        tmp.font_families.update("Cousine" => {
+          normal:      "fonts/cousine/Cousine-Regular.ttf",
+          italic:      "fonts/cousine/Cousine-Italic.ttf",
+          bold:        "fonts/cousine/Cousine-Bold.ttf",
+          bold_italic: "fonts/cousine/Cousine-BoldItalic.ttf",
+        })
+
+        tmp.font 'Gentium Basic'
+        tmp.font_size 12
+        tmp.default_leading 2
+
+        tmp
+      end
+    end
+
+    def estimate_height
+      @pdf.bounds.absolute_top
+
+      tmp = temp_doc
+      tmp.start_new_page
+
+      before, after = 0
+      tmp.bounding_box([0, @pdf.bounds.absolute_top], width: @pdf.bounds.width, height: @pdf.bounds.height) do
+        before = tmp.cursor
+        yield tmp
+        after = tmp.cursor
+      end
+      - (after - before)
+    end
+
     def notify_unhandled(node)
       puts "*** #{self.class.to_s}: unhandled element: #{node.name}"
     end
@@ -126,6 +181,8 @@ class DDDocBookTools::Renderers::PDF
   class ChapterTitleRenderer < NodeRenderer
 
     def process
+      handle_top_margin(0)
+
       text = @node.children.find { |e| e.text? }
 
       @pdf.bounding_box([0, @pdf.bounds.height - 50], width: @pdf.bounds.width) do
@@ -133,8 +190,9 @@ class DDDocBookTools::Renderers::PDF
           @pdf.text text.text, align: :right
         end
       end
-      @pdf.move_down(100)
       @state.add_chapter(text.text, @pdf.page_number)
+
+      handle_bottom_margin(100)
     end
 
   end
@@ -142,6 +200,8 @@ class DDDocBookTools::Renderers::PDF
   class SectionRenderer < NodeRenderer
 
     def process
+      handle_top_margin(0)
+
       @pdf.indent(indent, indent) do
         handle_children({
           'simpara'        => SimparaRenderer,
@@ -152,10 +212,11 @@ class DDDocBookTools::Renderers::PDF
           'note'           => NoteRenderer,
           'section'        => SubsectionRenderer,
           'figure'         => FigureRenderer,
+          'itemizedlist'   => ItemizedListRenderer,
         })
       end
 
-      @pdf.move_down(20)
+      handle_bottom_margin(20)
     end
 
     def indent
@@ -171,13 +232,16 @@ class DDDocBookTools::Renderers::PDF
   class SectionTitleRenderer < NodeRenderer
 
     def process
+      handle_top_margin(0)
+
       text = @node.children.find { |e| e.text? }
 
       @pdf.indent(indent, indent) do
         @pdf.formatted_text [ { text: text.text, font: 'PT Sans', styles: [ :bold ], size: font_size } ]
       end
-      @pdf.move_down(10)
       @state.add_section(text.text, @pdf.page_number)
+
+      handle_bottom_margin(10)
     end
 
     def level
@@ -239,6 +303,8 @@ class DDDocBookTools::Renderers::PDF
   class FigureRenderer < NodeRenderer
 
     def process
+      handle_top_margin(0)
+
       # Title
       title = @node.children.find { |e| e.name == 'title' }
       text = title.children.find { |e| e.text? }.text
@@ -255,8 +321,9 @@ class DDDocBookTools::Renderers::PDF
           { text: 'Figure: ', styles: [ :bold ],   font: 'PT Sans' },
           { text: text,       styles: [ :italic ], font: 'Gentium Basic' }
           ])
-        @pdf.move_down 10
       end
+
+      handle_bottom_margin(10)
     end
 
   end
@@ -280,6 +347,8 @@ class DDDocBookTools::Renderers::PDF
   class SimparaRenderer < NodeRenderer
 
     def process
+      handle_top_margin(0)
+
       res = handle_children({
         'text'     => TextRenderer,
         'emphasis' => EmphasisRenderer,
@@ -289,7 +358,8 @@ class DDDocBookTools::Renderers::PDF
       })
 
       @pdf.formatted_text(res.compact)
-      @pdf.move_down(10)
+
+      handle_bottom_margin(10)
     end
 
   end
@@ -297,6 +367,8 @@ class DDDocBookTools::Renderers::PDF
   class ParaRenderer < NodeRenderer
 
     def process
+      handle_top_margin(0)
+
       res = handle_children({
         'text'     => TextRenderer,
         'emphasis' => EmphasisRenderer,
@@ -306,7 +378,45 @@ class DDDocBookTools::Renderers::PDF
       })
 
       @pdf.formatted_text(res.compact)
-      @pdf.move_down(10)
+
+      handle_bottom_margin(10)
+    end
+
+  end
+
+  class ItemizedListRenderer < NodeRenderer
+
+    def process
+      handle_top_margin(0)
+
+      handle_children({
+        'listitem' => ItemizedListListItemRenderer,
+      })
+
+      handle_bottom_margin(10)
+    end
+
+  end
+
+  class ItemizedListListItemRenderer < NodeRenderer
+
+    def process
+      handle_top_margin(0)
+
+      orig = @pdf.cursor
+      @pdf.bounding_box([0, @pdf.cursor], :width => 30, :height => 20) do
+        @pdf.text "- "
+      end
+      @pdf.move_cursor_to orig
+
+      @pdf.indent(10, 10) do
+        handle_children({
+          'para'    => ParaRenderer,
+          'simpara' => SimparaRenderer,
+        })
+      end
+
+      handle_bottom_margin(0)
     end
 
   end
