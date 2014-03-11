@@ -1,41 +1,38 @@
 # encoding: utf-8
 
-require 'prawn'
 require 'nokogiri'
 
-require './renderers'
+require_relative './lib/dddocbooktools'
+
+root = File.dirname(__FILE__)
+config = {
+  defaults: {
+    font: 'Gentium Basic',
+    font_size: 12,
+    leading: 2,
+  },
+  fonts: {
+    "PT Sans" => {
+      normal:      "#{root}/data/fonts/PT-Sans/PTS55F.ttf",
+      italic:      "#{root}/data/fonts/PT-Sans/PTS56F.ttf",
+      bold:        "#{root}/data/fonts/PT-Sans/PTS75F.ttf",
+      bold_italic: "#{root}/data/fonts/PT-Sans/PTS76F.ttf",
+    },
+    "Gentium Basic" => {
+      normal:      "#{root}/data/fonts/GentiumBasic_1102/GenBasR.ttf",
+      italic:      "#{root}/data/fonts/GentiumBasic_1102/GenBasI.ttf",
+      bold:        "#{root}/data/fonts/GentiumBasic_1102/GenBasB.ttf",
+      bold_italic: "#{root}/data/fonts/GentiumBasic_1102/GenBasBI.ttf",
+    },
+    "Cousine" => {
+      normal:      "#{root}/data/fonts/cousine/Cousine-Regular.ttf",
+      italic:      "#{root}/data/fonts/cousine/Cousine-Italic.ttf",
+      bold:        "#{root}/data/fonts/cousine/Cousine-Bold.ttf",
+      bold_italic: "#{root}/data/fonts/cousine/Cousine-BoldItalic.ttf",
+    },
+  }
+}
 
 doc = Nokogiri::XML.parse($stdin)
-
-Prawn::Document.generate("nanoc.pdf") do |pdf|
-
-  pdf.font_families.update("PT Sans" => {
-    normal:      "fonts/PT-Sans/PTS55F.ttf",
-    italic:      "fonts/PT-Sans/PTS56F.ttf",
-    bold:        "fonts/PT-Sans/PTS75F.ttf",
-    bold_italic: "fonts/PT-Sans/PTS76F.ttf",
-  })
-
-  pdf.font_families.update("Gentium Basic" => {
-    normal:      "fonts/GentiumBasic_1102/GenBasR.ttf",
-    italic:      "fonts/GentiumBasic_1102/GenBasI.ttf",
-    bold:        "fonts/GentiumBasic_1102/GenBasB.ttf",
-    bold_italic: "fonts/GentiumBasic_1102/GenBasBI.ttf",
-  })
-
-  pdf.font_families.update("Cousine" => {
-    normal:      "fonts/cousine/Cousine-Regular.ttf",
-    italic:      "fonts/cousine/Cousine-Italic.ttf",
-    bold:        "fonts/cousine/Cousine-Bold.ttf",
-    bold_italic: "fonts/cousine/Cousine-BoldItalic.ttf",
-  })
-
-  pdf.font 'Gentium Basic'
-  pdf.font_size 12
-  pdf.default_leading 2
-
-  state = State.new
-
-  RootRenderer.new(doc, pdf, state).process
-
-end
+pdf_renderer = DDDocBookTools::Renderers::PDF.new(doc, "nanoc.pdf", config)
+pdf_renderer.run
