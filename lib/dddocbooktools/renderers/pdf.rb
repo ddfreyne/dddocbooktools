@@ -52,7 +52,7 @@ class DDDocBookTools::Renderers::PDF
     end
 
     def handle_bottom_margin(x)
-      @state.move_down = x
+      @state.move_down = [ @state.move_down, x].max
     end
 
     def temp_doc
