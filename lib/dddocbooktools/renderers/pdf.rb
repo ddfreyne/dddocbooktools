@@ -213,6 +213,7 @@ class DDDocBookTools::Renderers::PDF
           'section'        => SubsectionRenderer,
           'figure'         => FigureRenderer,
           'itemizedlist'   => ItemizedListRenderer,
+          'qandaset'       => QAndASetRenderer,
         })
       end
 
@@ -384,6 +385,28 @@ class DDDocBookTools::Renderers::PDF
 
   end
 
+  class BoldParaRenderer < NodeRenderer
+
+    def process
+      handle_top_margin(0)
+
+      res = handle_children({
+        'text'     => TextRenderer,
+        'emphasis' => EmphasisRenderer,
+        'literal'  => LiteralRenderer,
+        'ulink'    => UlinkRenderer,
+        'xref'     => XrefRenderer,
+      })
+
+      @pdf.formatted_text(res.compact.map do |e|
+        e.merge({ styles: e.fetch(:styles, []) + [ :bold ] })
+      end)
+
+      handle_bottom_margin(10)
+    end
+
+  end
+
   class ItemizedListRenderer < NodeRenderer
 
     def process
@@ -417,6 +440,63 @@ class DDDocBookTools::Renderers::PDF
       end
 
       handle_bottom_margin(0)
+    end
+
+  end
+
+  class QAndASetRenderer < NodeRenderer
+
+    def process
+      handle_top_margin(0)
+
+      handle_children({
+        'qandaentry' => QAndAEntryRenderer,
+      })
+
+      handle_bottom_margin(10)
+    end
+
+  end
+
+  class QAndAEntryRenderer < NodeRenderer
+
+    def process
+      handle_top_margin(0)
+
+      handle_children({
+        'question' => QAndAEntryQuestionRenderer,
+        'answer'   => QAndAEntryAnswerRenderer,
+      })
+
+      handle_bottom_margin(10)
+    end
+
+  end
+
+  class QAndAEntryQuestionRenderer < NodeRenderer
+
+    def process
+      handle_top_margin(0)
+
+      handle_children({
+        'para'     => BoldParaRenderer,
+      })
+
+      handle_top_margin(0)
+    end
+
+  end
+
+  class QAndAEntryAnswerRenderer < NodeRenderer
+
+    def process
+      handle_top_margin(0)
+
+      handle_children({
+        'para' => ParaRenderer,
+      })
+
+      handle_top_margin(0)
     end
 
   end
