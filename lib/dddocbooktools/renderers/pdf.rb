@@ -50,23 +50,24 @@ class DDDocBookTools::Renderers::PDF
       puts "*** #{self.class.to_s}: unhandled element: #{node.name}"
     end
 
+    def handle_children(map)
+      @node.children.map do |node|
+        klass = map[node.name]
+        if klass
+          klass.new(node, @pdf, @state).process
+        else
+          notify_unhandled(node)
+          nil
+        end
+      end
+    end
+
   end
 
   class RootRenderer < NodeRenderer
 
     def process
-      @node.children.each do |node|
-        klass = case node.name
-        when 'book'
-          BookRenderer
-        end
-
-        if klass
-          klass.new(node, @pdf, @state).process
-        else
-          notify_unhandled(node)
-        end
-      end
+      handle_children({ 'book' => BookRenderer })
     end
 
   end
@@ -74,42 +75,33 @@ class DDDocBookTools::Renderers::PDF
   class BookRenderer < NodeRenderer
 
     def process
-      @node.children.each do |node|
-        klass = case node.name
-        when 'chapter'
-          ChapterRenderer
-        end
+      @pdf.repeat(:all, dynamic: true) do
+        @pdf.stroke_horizontal_line(50, @pdf.bounds.width - 50, at: 20)
+        at = [ 50, 14 ]
+        @pdf.font('PT Sans', size: 10) do
+          current_chapter = @state.chapters.reverse_each.with_index.find { |e,i| e[0] <= @pdf.page_number }
+          current_section = @state.sections.reverse_each.with_index.find { |e,i| e[0] <= @pdf.page_number }
 
-        if klass
-          @pdf.repeat(:all, dynamic: true) do
-            @pdf.stroke_horizontal_line(50, @pdf.bounds.width - 50, at: 20)
-            at = [ 50, 14 ]
-            @pdf.font('PT Sans', size: 10) do
-              current_chapter = @state.chapters.reverse_each.with_index.find { |e,i| e[0] <= @pdf.page_number }
-              current_section = @state.sections.reverse_each.with_index.find { |e,i| e[0] <= @pdf.page_number }
-
-              text = ''
-              if @pdf.page_number.even?
-                text << @pdf.page_number.to_s
-                text << '   |   '
-                text << "Chapter #{current_chapter[0][2]}: #{current_chapter[0][1]}"
-                align = :left
-              else
-                text << "#{current_section[0][1]}"
-                text << '   |   '
-                text << @pdf.page_number.to_s
-                align = :right
-              end
-              @pdf.text_box(text, at: at, size: 9, width: @pdf.bounds.width - 100, align: align)
-            end
+          text = ''
+          if @pdf.page_number.even?
+            text << @pdf.page_number.to_s
+            text << '   |   '
+            text << "Chapter #{current_chapter[0][2]}: #{current_chapter[0][1]}"
+            align = :left
+          else
+            text << "#{current_section[0][1]}"
+            text << '   |   '
+            text << @pdf.page_number.to_s
+            align = :right
           end
-
-          @pdf.bounding_box([ 50, @pdf.bounds.height - 30 ], width: @pdf.bounds.width - 100, height: @pdf.bounds.height - 70) do
-            klass.new(node, @pdf, @state).process
-          end
-        else
-          notify_unhandled(node)
+          @pdf.text_box(text, at: at, size: 9, width: @pdf.bounds.width - 100, align: align)
         end
+      end
+
+      @pdf.bounding_box([ 50, @pdf.bounds.height - 30 ], width: @pdf.bounds.width - 100, height: @pdf.bounds.height - 70) do
+        handle_children({
+          'chapter' => ChapterRenderer
+        })
       end
     end
 
@@ -118,36 +110,11 @@ class DDDocBookTools::Renderers::PDF
   class ChapterRenderer < NodeRenderer
 
     def process
-      titles, nontitles = @node.children.partition do |e|
-        e.name == 'title'
-      end
-      render_titles(titles)
-      render_nontitles(nontitles)
-
+      handle_children({
+        'title'   => ChapterTitleRenderer,
+        'section' => SectionRenderer
+      })
       @pdf.start_new_page
-    end
-
-    def render_titles(titles)
-      if titles.size != 1
-        raise 'not enough titles or too many'
-      end
-
-      ChapterTitleRenderer.new(titles[0], @pdf, @state).process
-    end
-
-    def render_nontitles(nontitles)
-      nontitles.each do |node|
-        klass = case node.name
-        when 'section'
-          SectionRenderer
-        end
-
-        if klass
-          klass.new(node, @pdf, @state).process
-        else
-          notify_unhandled(node)
-        end
-      end
     end
 
   end
@@ -171,31 +138,16 @@ class DDDocBookTools::Renderers::PDF
   class SectionRenderer < NodeRenderer
 
     def process
-      @node.children.each do |node|
-        klass = case node.name
-        when 'simpara'
-          SimparaRenderer
-        when 'programlisting'
-          ProgramListingRenderer
-        when 'screen'
-          ScreenRenderer
-        when 'title'
-          section_title_renderer_class
-        when 'note'
-          NoteRenderer
-        when 'section'
-          SubsectionRenderer
-        when 'figure'
-          FigureRenderer
-        end
-
-        if klass
-          @pdf.indent(indent, indent) do
-            klass.new(node, @pdf, @state).process
-          end
-        else
-          notify_unhandled(node)
-        end
+      @pdf.indent(indent, indent) do
+        handle_children({
+          'simpara'        => SimparaRenderer,
+          'programlisting' => ProgramListingRenderer,
+          'screen'         => ScreenRenderer,
+          'title'          => section_title_renderer_class,
+          'note'           => NoteRenderer,
+          'section'        => SubsectionRenderer,
+          'figure'         => FigureRenderer,
+        })
       end
 
       @pdf.move_down(20)
@@ -268,20 +220,11 @@ class DDDocBookTools::Renderers::PDF
   class NoteRenderer < NodeRenderer
 
     def process
-      @node.children.each do |node|
-        klass = case node.name
-        when 'simpara'
-          SimparaRenderer
-        end
-
-        if klass
-          @pdf.indent(20) do
-            @pdf.formatted_text [ { text: 'NOTE', styles: [ :bold ], font: 'PT Sans' } ]
-            klass.new(node, @pdf, @state).process
-          end
-        else
-          notify_unhandled(node)
-        end
+      @pdf.indent(20) do
+        @pdf.formatted_text [ { text: 'NOTE', styles: [ :bold ], font: 'PT Sans' } ]
+        handle_children({
+          'simpara' => SimparaRenderer,
+        })
       end
     end
 
@@ -312,33 +255,32 @@ class DDDocBookTools::Renderers::PDF
 
   end
 
+  class TextRenderer < NodeRenderer
+
+    def process
+      { text: @node.text }
+    end
+
+  end
+
+  class PreformattedTextRenderer < NodeRenderer
+
+    def process
+      { text: @node.text.gsub(' ', Prawn::Text::NBSP) }
+    end
+
+  end
+
   class SimparaRenderer < NodeRenderer
 
     def process
-      text = @node.children.find { |e| e.text? }
-
-      res = @node.children.map do |node|
-        if node.text?
-          next { text: node.text }
-        end
-
-        klass = case node.name
-        when 'emphasis'
-          EmphasisRenderer
-        when 'literal'
-          LiteralRenderer
-        when 'ulink'
-          UlinkRenderer
-        when 'xref'
-          XrefRenderer
-        end
-
-        if klass
-          klass.new(node, @pdf, @state).process
-        else
-          notify_unhandled(node)
-        end
-      end
+      res = handle_children({
+        'text'     => TextRenderer,
+        'emphasis' => EmphasisRenderer,
+        'literal'  => LiteralRenderer,
+        'ulink'    => UlinkRenderer,
+        'xref'     => XrefRenderer,
+      })
 
       @pdf.formatted_text(res)
       @pdf.move_down(10)
@@ -349,30 +291,15 @@ class DDDocBookTools::Renderers::PDF
   class ScreenRenderer < NodeRenderer
 
     def process
+      res = handle_children({
+        'text'     => PreformattedTextRenderer,
+        'emphasis' => EmphasisRenderer,
+        'literal'  => LiteralRenderer,
+        'ulink'    => UlinkRenderer,
+        'xref'     => XrefRenderer,
+      })
+
       @pdf.indent(20, 20) do
-        res = @node.children.map do |node|
-          if node.text?
-            next { text: node.text.gsub(' ', Prawn::Text::NBSP) }
-          end
-
-          klass = case node.name
-          when 'emphasis'
-            EmphasisRenderer
-          when 'literal'
-            LiteralRenderer
-          when 'ulink'
-            UlinkRenderer
-          when 'xref'
-            XrefRenderer
-          end
-
-          if klass
-            klass.new(node, @pdf, @state).process
-          else
-            notify_unhandled(node)
-          end
-        end
-
         @pdf.font('Cousine', size: 10) do
           @pdf.formatted_text(res)
         end
@@ -385,30 +312,15 @@ class DDDocBookTools::Renderers::PDF
   class ProgramListingRenderer < NodeRenderer
 
     def process
+      res = handle_children({
+        'text'     => PreformattedTextRenderer,
+        'emphasis' => EmphasisRenderer,
+        'literal'  => LiteralRenderer,
+        'ulink'    => UlinkRenderer,
+        'xref'     => XrefRenderer,
+      })
+
       @pdf.indent(20, 20) do
-        res = @node.children.map do |node|
-          if node.text?
-            next { text: node.text.gsub(' ', Prawn::Text::NBSP) }
-          end
-
-          klass = case node.name
-          when 'emphasis'
-            EmphasisRenderer
-          when 'literal'
-            LiteralRenderer
-          when 'ulink'
-            UlinkRenderer
-          when 'xref'
-            XrefRenderer
-          end
-
-          if klass
-            klass.new(node, @pdf, @state).process
-          else
-            notify_unhandled(node)
-          end
-        end
-
         @pdf.font('Cousine', size: 10) do
           @pdf.formatted_text(res)
         end
