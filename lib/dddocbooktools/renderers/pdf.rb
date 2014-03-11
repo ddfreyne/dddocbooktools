@@ -79,8 +79,10 @@ class DDDocBookTools::Renderers::PDF
         @pdf.stroke_horizontal_line(50, @pdf.bounds.width - 50, at: 20)
         at = [ 50, 14 ]
         @pdf.font('PT Sans', size: 10) do
-          current_chapter = @state.chapters.reverse_each.with_index.find { |e,i| e[0] <= @pdf.page_number }
-          current_section = @state.sections.reverse_each.with_index.find { |e,i| e[0] <= @pdf.page_number }
+          current_chapter = @state.chapters.reverse_each.with_index.find { |e,i| e ? e[0] <= @pdf.page_number : false }
+          current_section = @state.sections.reverse_each.with_index.find { |e,i| e ? e[0] <= @pdf.page_number : false }
+
+          next if current_chapter.nil? || current_section.nil?
 
           text = ''
           if @pdf.page_number.even?
