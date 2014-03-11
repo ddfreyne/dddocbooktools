@@ -100,7 +100,8 @@ class DDDocBookTools::Renderers::PDF
 
       @pdf.bounding_box([ 50, @pdf.bounds.height - 30 ], width: @pdf.bounds.width - 100, height: @pdf.bounds.height - 70) do
         handle_children({
-          'chapter' => ChapterRenderer
+          'chapter' => ChapterRenderer,
+          'section' => SectionRenderer,
         })
       end
     end
@@ -110,11 +111,12 @@ class DDDocBookTools::Renderers::PDF
   class ChapterRenderer < NodeRenderer
 
     def process
+      @pdf.start_new_page
       handle_children({
         'title'   => ChapterTitleRenderer,
-        'section' => SectionRenderer
+        'section' => SectionRenderer,
+        'para'    => ParaRenderer,
       })
-      @pdf.start_new_page
     end
 
   end
@@ -141,6 +143,7 @@ class DDDocBookTools::Renderers::PDF
       @pdf.indent(indent, indent) do
         handle_children({
           'simpara'        => SimparaRenderer,
+          'para'           => ParaRenderer,
           'programlisting' => ProgramListingRenderer,
           'screen'         => ScreenRenderer,
           'title'          => section_title_renderer_class,
@@ -224,6 +227,7 @@ class DDDocBookTools::Renderers::PDF
         @pdf.formatted_text [ { text: 'NOTE', styles: [ :bold ], font: 'PT Sans' } ]
         handle_children({
           'simpara' => SimparaRenderer,
+          'para'    => ParaRenderer,
         })
       end
     end
@@ -258,7 +262,7 @@ class DDDocBookTools::Renderers::PDF
   class TextRenderer < NodeRenderer
 
     def process
-      { text: @node.text }
+      { text: @node.text.gsub(/\s+/, ' ') }
     end
 
   end
@@ -282,7 +286,24 @@ class DDDocBookTools::Renderers::PDF
         'xref'     => XrefRenderer,
       })
 
-      @pdf.formatted_text(res)
+      @pdf.formatted_text(res.compact)
+      @pdf.move_down(10)
+    end
+
+  end
+
+  class ParaRenderer < NodeRenderer
+
+    def process
+      res = handle_children({
+        'text'     => TextRenderer,
+        'emphasis' => EmphasisRenderer,
+        'literal'  => LiteralRenderer,
+        'ulink'    => UlinkRenderer,
+        'xref'     => XrefRenderer,
+      })
+
+      @pdf.formatted_text(res.compact)
       @pdf.move_down(10)
     end
 
@@ -301,7 +322,7 @@ class DDDocBookTools::Renderers::PDF
 
       @pdf.indent(20, 20) do
         @pdf.font('Cousine', size: 10) do
-          @pdf.formatted_text(res)
+          @pdf.formatted_text(res.compact)
         end
         @pdf.move_down(10)
       end
@@ -322,7 +343,7 @@ class DDDocBookTools::Renderers::PDF
 
       @pdf.indent(20, 20) do
         @pdf.font('Cousine', size: 10) do
-          @pdf.formatted_text(res)
+          @pdf.formatted_text(res.compact)
         end
         @pdf.move_down(10)
       end
