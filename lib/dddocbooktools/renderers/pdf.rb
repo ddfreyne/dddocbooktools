@@ -546,7 +546,7 @@ class DDDocBookTools::Renderers::PDF
   class EmphasisRenderer < NodeRenderer
 
     def process
-      { text: @node.text, styles: [ :bold ] }
+      { text: @node.text, styles: [ :italic ] }
     end
 
   end
