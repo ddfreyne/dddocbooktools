@@ -482,7 +482,7 @@ class DDDocBookTools::Renderers::PDF
         'para'     => BoldParaRenderer,
       })
 
-      handle_top_margin(0)
+      handle_bottom_margin(0)
     end
 
   end
@@ -496,7 +496,7 @@ class DDDocBookTools::Renderers::PDF
         'para' => ParaRenderer,
       })
 
-      handle_top_margin(0)
+      handle_bottom_margin(0)
     end
 
   end
@@ -504,6 +504,8 @@ class DDDocBookTools::Renderers::PDF
   class ScreenRenderer < NodeRenderer
 
     def process
+      handle_top_margin(0)
+
       res = handle_children({
         'text'     => PreformattedTextRenderer,
         'emphasis' => EmphasisRenderer,
@@ -516,8 +518,9 @@ class DDDocBookTools::Renderers::PDF
         @pdf.font('Cousine', size: 10) do
           @pdf.formatted_text(res.compact)
         end
-        @pdf.move_down(10)
       end
+
+      handle_bottom_margin(10)
     end
 
   end
@@ -525,6 +528,8 @@ class DDDocBookTools::Renderers::PDF
   class ProgramListingRenderer < NodeRenderer
 
     def process
+      handle_top_margin(0)
+
       res = handle_children({
         'text'     => PreformattedTextRenderer,
         'emphasis' => EmphasisRenderer,
@@ -537,8 +542,9 @@ class DDDocBookTools::Renderers::PDF
         @pdf.font('Cousine', size: 10) do
           @pdf.formatted_text(res.compact)
         end
-        @pdf.move_down(10)
       end
+
+      handle_bottom_margin(10)
     end
 
   end
