@@ -226,7 +226,7 @@ class DDDocBookTools::Renderers::PDF
   class SectionRenderer < NodeRenderer
 
     def process
-      handle_top_margin(0)
+      handle_top_margin(20)
 
       @pdf.indent(indent, indent) do
         handle_children({
@@ -244,7 +244,7 @@ class DDDocBookTools::Renderers::PDF
         })
       end
 
-      handle_bottom_margin(20)
+      handle_bottom_margin(10)
     end
 
     def indent
@@ -317,6 +317,8 @@ class DDDocBookTools::Renderers::PDF
   class NoteRenderer < NodeRenderer
 
     def process
+      handle_top_margin(0)
+
       @pdf.indent(20) do
         @pdf.formatted_text [ { text: 'NOTE', styles: [ :bold ], font: 'PT Sans' } ]
         handle_children({
@@ -324,6 +326,8 @@ class DDDocBookTools::Renderers::PDF
           'para'    => ParaRenderer,
         })
       end
+
+      handle_top_margin(10)
     end
 
   end
