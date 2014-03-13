@@ -209,13 +209,16 @@ class DDDocBookTools::Renderers::PDF
       text = @node.children.find { |e| e.text? }
 
       @pdf.bounding_box([0, @pdf.bounds.height - 50], width: @pdf.bounds.width) do
+        @pdf.font('PT Sans', size: 18, style: :bold) do
+          @pdf.text "CHAPTER #{@state.current_chapter}", align: :right
+        end
         @pdf.font('PT Sans', size: 32, style: :bold) do
           @pdf.text text.text, align: :right
         end
       end
       @state.add_chapter(text.text, @pdf.page_number)
 
-      handle_bottom_margin(100)
+      handle_bottom_margin(180)
     end
 
   end
