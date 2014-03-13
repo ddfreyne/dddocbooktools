@@ -34,6 +34,5 @@ config = {
 }
 
 doc = Nokogiri::XML.parse($stdin, nil, 'utf-8', Nokogiri::XML::ParseOptions::DEFAULT_XML | Nokogiri::XML::ParseOptions::XINCLUDE)
-puts doc.to_xml
 pdf_renderer = DDDocBookTools::Renderers::PDF.new(doc, "nanoc.pdf", config)
 pdf_renderer.run
