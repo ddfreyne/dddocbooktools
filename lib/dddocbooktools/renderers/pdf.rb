@@ -158,10 +158,30 @@ class DDDocBookTools::Renderers::PDF
 
       @pdf.bounding_box([ 50, @pdf.bounds.height - 30 ], width: @pdf.bounds.width - 100, height: @pdf.bounds.height - 70) do
         handle_children({
-          'text'    => nil,
-          'chapter' => ChapterRenderer,
-          'section' => SectionRenderer,
+          'text'     => nil,
+          'bookinfo' => BookInfoRenderer,
+          'chapter'  => ChapterRenderer,
+          'section'  => SectionRenderer,
         })
+      end
+    end
+
+  end
+
+  class BookInfoRenderer < NodeRenderer
+
+    def process
+      @pdf.bounding_box([0, @pdf.bounds.height - 200], width: @pdf.bounds.width) do
+        @pdf.font('PT Sans', size: 48, style: :bold) do
+          @pdf.text @node.css('title').text, align: :right
+        end
+        @pdf.font('PT Sans', size: 18) do
+          text = [
+            @node.css('author firstname').text,
+            @node.css('author surname').text,
+          ].join(' ')
+          @pdf.text text, align: :right
+        end
       end
     end
 
