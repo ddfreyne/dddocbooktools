@@ -107,8 +107,9 @@ class DDDocBookTools::Renderers::PDF
 
     def handle_children(map)
       @node.children.map do |node|
-        klass = map[node.name]
-        if klass
+        if map.has_key?(node.name)
+          klass = map[node.name]
+          next if klass.nil?
           klass.new(node, @pdf, @state).process
         else
           notify_unhandled(node)
@@ -157,6 +158,7 @@ class DDDocBookTools::Renderers::PDF
 
       @pdf.bounding_box([ 50, @pdf.bounds.height - 30 ], width: @pdf.bounds.width - 100, height: @pdf.bounds.height - 70) do
         handle_children({
+          'text'    => nil,
           'chapter' => ChapterRenderer,
           'section' => SectionRenderer,
         })
@@ -170,6 +172,7 @@ class DDDocBookTools::Renderers::PDF
     def process
       @pdf.start_new_page
       handle_children({
+        'text'    => nil,
         'title'   => ChapterTitleRenderer,
         'section' => SectionRenderer,
         'para'    => ParaRenderer,
@@ -204,6 +207,7 @@ class DDDocBookTools::Renderers::PDF
 
       @pdf.indent(indent, indent) do
         handle_children({
+          'text'           => nil,
           'simpara'        => SimparaRenderer,
           'para'           => ParaRenderer,
           'programlisting' => ProgramListingRenderer,
